@@ -37,3 +37,33 @@ INSERT INTO products (id, name, price, description, image_url) VALUES ('003', 'h
 INSERT INTO products (id, name, price, description, image_url) VALUES ('004', 'mousepad', 5, 'mousepad', 'https://picsum.photos/seed/Mousepad/400');
 
 DELETE FROM products WHERE id = '000';
+
+CREATE Table purchases (
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    buyer TEXT NOT NULL ,
+    total_price REAL NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (buyer) REFERENCES users(id)
+);
+
+INSERT INTO purchases (id, buyer, total_price, created_at)
+VALUES
+('000','Leonardo', 25, '10/11/1997'),
+('001','Ingrid', 10, '14/05/1957');
+
+DROP Table purchases;
+
+UPDATE purchases
+set total_price = total_price + 10
+WHERE id = '001';
+
+SELECT
+    p.id AS id_da_compra,
+    p.buyer AS id_de_quem_fez_a_compra,
+    u.name AS nome_de_quem_fez_a_compra,
+    u.email AS email_de_quem_fez_a_compra,
+    p.total_price AS preço_total_da_compra,
+    p.created_at AS data_da_compra
+FROM purchases AS p
+JOIN users AS u ON p.buyer = u.id
+WHERE p.id = '001';
