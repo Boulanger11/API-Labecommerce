@@ -10,12 +10,14 @@ CREATE TABLE users (
 );
 
 SELECT * FROM users;
-
+/* 
 INSERT INTO users (id, name, email, password, created_at) VALUES ('000', 'Leonardo', 'leo@email.com', '1234', '10/11/1997');
 
 INSERT INTO users (id, name, email, password, created_at) VALUES ('001', 'Ingrid', 'ingrid@email.com', '4321', '14/05/1957');
 
-INSERT INTO users (id, name, email, password, created_at) VALUES ('002', 'Valquiria', 'val@email.com', '0000', '15/01/1987');
+INSERT INTO users (id, name, email, password, created_at) VALUES ('002', 'Valquiria', 'val@email.com', '0000', '15/01/1987'); */
+
+DELETE FROM users WHERE id = '002';
 
 --PRODUTOS
 CREATE TABLE products (
@@ -26,7 +28,7 @@ CREATE TABLE products (
     image_url TEXT NOT NULL
 );
 
-INSERT INTO products (id, name, price, description, image_url) VALUES ('000', 'mouse', 15, 'mouse gamer', 'https://picsum.photos/seed/Mouse%20gamer/400');
+/* INSERT INTO products (id, name, price, description, image_url) VALUES ('000', 'mouse', 15, 'mouse gamer', 'https://picsum.photos/seed/Mouse%20gamer/400');
 
 INSERT INTO products (id, name, price, description, image_url) VALUES ('001', 'monitor', 100, 'monitor', 'https://picsum.photos/seed/Monitor/400');
 
@@ -34,9 +36,9 @@ INSERT INTO products (id, name, price, description, image_url) VALUES ('002', 't
 
 INSERT INTO products (id, name, price, description, image_url) VALUES ('003', 'headset', 40, 'fone gamer', 'https://picsum.photos/seed/Fone/400');
 
-INSERT INTO products (id, name, price, description, image_url) VALUES ('004', 'mousepad', 5, 'mousepad', 'https://picsum.photos/seed/Mousepad/400');
+INSERT INTO products (id, name, price, description, image_url) VALUES ('004', 'mousepad', 5, 'mousepad', 'https://picsum.photos/seed/Mousepad/400'); */
 
-DELETE FROM products WHERE id = '000';
+DELETE FROM products WHERE id = '004';
 
 CREATE Table purchases (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
@@ -48,14 +50,14 @@ CREATE Table purchases (
 
 INSERT INTO purchases (id, buyer, total_price, created_at)
 VALUES
-('000','Leonardo', 25, '10/11/1997'),
-('001','Ingrid', 10, '14/05/1957');
+('pur000', 'u001', 0, '10/11/1997'),
+('pur002', 'u002', 1, '14/05/1957');
 
 DROP Table purchases;
 
 UPDATE purchases
 set total_price = total_price + 10
-WHERE id = '001';
+WHERE id = 'pur001';
 
 SELECT
     p.id AS id_da_compra,
@@ -82,11 +84,11 @@ VALUES ('000', '000', 5), ('000', '001', 3);
 INSERT INTO purchases_products (purchase_id, product_id, quantity)
 VALUES ('001', '001', 2), ('001', '000', 1);
 
-
 DROP TABLE purchases_products;
 
 SELECT pp.*, p.*, pr.*
 FROM purchases_products pp
 INNER JOIN purchases p ON pp.purchase_id = p.id
 INNER JOIN products pr ON pp.product_id = pr.id;
+
 
