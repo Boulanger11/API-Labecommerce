@@ -7,5 +7,5 @@ Requisições de Produtos: /products
 Requisições de Compras: /purchases
 Esta é uma etapa fundamental na minha jornada de programação, onde estou aprendendo os princípios básicos da construção de APIs no back-end.
 
-[Coleção de requisições]([https://documenter.getpostman.com/view/28316378/2s9YJXYPzW](https://documenter.getpostman.com/view/28316378/2s9YRDzART)https://documenter.getpostman.com/view/28316378/2s9YRDzART) 
+[Coleção de requisições](https://documenter.getpostman.com/view/28316378/2s9YRDzART) 
  
