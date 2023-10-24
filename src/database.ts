@@ -1,4 +1,4 @@
-import { TUsers, TProducts } from "./types";
+/* import { TUsers, TProducts } from "./types";
 
 export const users: TUsers[] = [
     {
@@ -62,4 +62,4 @@ export function getAllProducts(): TProducts[] {
 export function searchProductsByName(name: string): TProducts[]{
     const searchTerm = name.toLocaleLowerCase()
     return products.filter((product) => product.name.toLocaleLowerCase().includes(searchTerm))
-}
+} */
