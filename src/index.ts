@@ -32,7 +32,7 @@ console.log(searchProductsByName("monitor")) */
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { TProducts, TUsers } from './types';
-import { products, users } from './database';
+/* import { products, users } from './database'; */
 import { db } from './database/knex';
 
 
@@ -67,7 +67,8 @@ app.get("/teste", async (req: Request, res: Response) => {
 // USUARIO
 app.get("/users", async (req: Request, res: Response) => {
     try {
-        const result= await db.raw(`SELECT * FROM users`)
+        /* const result = await db.raw(`SELECT * FROM users`) */
+        const result = await db('users')
 
         res.status(200).send(result)
     }
@@ -84,7 +85,7 @@ app.get("/users", async (req: Request, res: Response) => {
 
 })
 
-app.get("/user", (req: Request, res: Response) => {
+/* app.get("/user", (req: Request, res: Response) => {
     try {
         const q: string = req.query.q as string
 
@@ -98,7 +99,7 @@ app.get("/user", (req: Request, res: Response) => {
         }
     }
 
-})
+}) */
 
 app.post("/users", async (req: Request, res: Response) => {
     try {
@@ -109,14 +110,19 @@ app.post("/users", async (req: Request, res: Response) => {
             throw new Error("algo invalido!")
         }
 
-        await db.raw(`INSERT INTO users
-        VALUES
-        ('${id}', '${name}', '${email}', '${password}', '${created_at}')`)
+        const newUsers = {
+            id,
+            name,
+            email,
+            password,
+            created_at
+        }
+
+        await db('users').insert(newUsers)
 
         res.status(201).send('Usuário Cadastrada')
 
-    }
-    catch (error) {
+    }catch (error) {
         if (req.statusCode === 200) {
             res.status(500)
         }
@@ -129,23 +135,33 @@ app.post("/users", async (req: Request, res: Response) => {
     }
 })
 
-app.delete("/users/:id", (req: Request, res: Response) => {
+app.delete("/users/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
-        const indexToDelete = users.findIndex((user => user.id === id))
+        if (!id) {
+            throw new Error('Por favor, informar o ID a ser deletado.')
+        }
+        const [users] = await db('users').where({ id: id })
 
-        if (indexToDelete >= 0) {
-            users.splice(indexToDelete, 1)
+        if (users) {
+            await db.delete().from('users').where({ id: id })
         } else {
-            res.status(404).send({ message: "Produto não encontrado" })
+            res.status(404)
+            throw new Error('ID não encontrado!')
         }
 
         res.status(200).send({ message: "User apagado com sucesso" })
     }
     catch (error) {
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+
         if (error instanceof Error) {
             res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
         }
     }
 })
@@ -153,18 +169,53 @@ app.delete("/users/:id", (req: Request, res: Response) => {
 app.put("/users/:id", async (req: Request, res: Response) => {
     const idToEdit = req.params.id
 
-    /* const newId = req.body.id as string | undefined */
-    const newName = req.body.name as string | undefined
-    const newEmail = req.body.email as string | undefined
-    const newPassword = req.body.password as string | undefined
+    const newId = req.body.id
+    const newName = req.body.name 
+    const newEmail = req.body.email 
+    const newPassword = req.body.password
 
-    const user = users.find((user) => user.id === idToEdit)
+    if (newId !== undefined) {
 
-    if (user) {
-        user.name = newName || user.name
-        user.email = newEmail || user.email
-        user.password = newPassword || user.password
+        if (typeof newId !== "string") {
+            res.status(400)
+            throw new Error("'id' deve ser string")
+        }
     }
+    if (newName !== undefined) {
+
+        if (typeof newName !== "string") {
+            res.status(400)
+            throw new Error("'name' deve ser string")
+        }
+    }
+    if (newEmail !== undefined) {
+
+        if (typeof newName !== "string") {
+            res.status(400)
+            throw new Error("'email' deve ser string")
+        }
+    }
+    if (newPassword !== undefined) {
+
+        if (typeof newName !== "string") {
+            res.status(400)
+            throw new Error("'senha' deve ser string")
+        }
+    }
+
+    const [users] = await db('users').where({id: idToEdit})
+
+    if (users) {
+        const updateUsers = {
+            id: newId || users.id,
+            name: newName || users.name,
+            email: newEmail || users.email,
+            password: newPassword || users.password
+        }
+
+        await db.update(updateUsers).from('users').where({id: idToEdit})
+    }
+
 
     res.status(200).send({ message: "Produto atualizado com sucesso" })
 })
@@ -176,14 +227,14 @@ app.put("/users/:id", async (req: Request, res: Response) => {
 // PRODUTO
 app.get("/products", async (req: Request, res: Response) => {
     try {
-        const name = req.query.name; 
+        /* const name = req.query.name;
         let query = `SELECT * FROM products`;
 
         if (name) {
-            query += ` WHERE name LIKE '%${name}%'` 
-        }
+            query += ` WHERE name LIKE '%${name}%'`
+        } */
 
-        const result = await db.raw(query);
+        const result = await db('products')
 
         res.status(200).send(result);
     }
@@ -195,7 +246,7 @@ app.get("/products", async (req: Request, res: Response) => {
 
 })
 
-app.get("/product", (req: Request, res: Response) => {
+/* app.get("/product", (req: Request, res: Response) => {
     try {
         const q: string = req.query.q as string
 
@@ -209,7 +260,7 @@ app.get("/product", (req: Request, res: Response) => {
         }
     }
 
-})
+}) */
 
 app.post("/products", async (req: Request, res: Response) => {
     try {
@@ -220,13 +271,23 @@ app.post("/products", async (req: Request, res: Response) => {
             throw new Error("algo invalido!")
         }
 
-        await db.raw(`INSERT INTO products
+        /* await db.raw(`INSERT INTO products
         VALUES
-        ('${id}', '${name}', '${price}', '${description}', '${image_url}')`)
+        ('${id}', '${name}', '${price}', '${description}', '${image_url}')`) */
+
+        const newProducts = {
+            id,
+            name,
+            price,
+            description,
+            image_url
+        }
+
+        await db('products').insert(newProducts)
 
         res.status(200).send('Produto Cadastrado')
 
-    }catch (error: any) {
+    } catch (error: any) {
         if (req.statusCode === 200) {
             res.status(500)
         }
@@ -238,23 +299,33 @@ app.post("/products", async (req: Request, res: Response) => {
     }
 })
 
-app.delete("/products/:id", (req: Request, res: Response) => {
+app.delete("/products/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
-        const indexToDelete = products.findIndex((product => product.id === id))
+        if (!id) {
+            throw new Error('Por favor, informar o ID a ser deletado.')
+        }
+        const [products] = await db('products').where({ id: id })
 
-        if (indexToDelete >= 0) {
-            users.splice(indexToDelete, 1)
+        if (products) {
+            await db.delete().from('products').where({ id: id })
         } else {
-            res.status(404).send({ message: "Produto não encontrado" })
+            res.status(404)
+            throw new Error('ID não encontrado!')
         }
 
         res.status(200).send({ message: "Produto apagado com sucesso" })
     }
     catch (error) {
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+
         if (error instanceof Error) {
             res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
         }
     }
 
@@ -262,49 +333,58 @@ app.delete("/products/:id", (req: Request, res: Response) => {
 
 app.put("/products/:id", async (req: Request, res: Response) => {
     try {
-    const id = req.params.id
+        const idToEdit = req.params.id
 
-    const newId = req.body.newId
-    const newName = req.body.newName
-    const newPrice = req.body.newPrice 
-    const newDescription = req.body.newDescription
-    const newImage_url = req.body.newImage_url 
+        const newId = req.body.id
+        const newName = req.body.name
+        const newPrice = req.body.price
+        const newDescription = req.body.description
+        const newImage_url = req.body.image_url
 
-    if (newId !== undefined) {
-        if (typeof newId !== "string") {
-            res.status(400)
-            throw new Error("Id deve ser uma string")
-        }
-        
-    }
-    if (newName !== undefined) {
-        if (typeof newName !== "string") {
-            res.status(400)
-            throw new Error("Name deve ser uma string")
-        }
-        if (newName.length < 2) {
-            throw new Error("O name deve ter no mínimo 2 caracteres")
-        }
-    }
-        
-        const [products] = await db.raw(`SELECT * FROM products WHERE id = '${id}'`)
-        
+        if (newId !== undefined) {
+            if (typeof newId !== "string") {
+                res.status(400)
+                throw new Error("Id deve ser uma string")
+            }
 
-        if(products){//undefined 
-            await db.raw(`
+        }
+        if (newName !== undefined) {
+            if (typeof newName !== "string") {
+                res.status(400)
+                throw new Error("Name deve ser uma string")
+            }
+            if (newName.length < 2) {
+                throw new Error("O name deve ter no mínimo 2 caracteres")
+            }
+        }
+
+        const [products] = await db('products').where({id: idToEdit})
+
+
+        if (products) {//undefined 
+            /* await db.raw(`
                 UPDATE products SET 
                 id = '${newId || products.id}', name = '${newName || products.name}', price = '${newPrice || products.price}', description = '${newDescription || products.description}', image_url = '${newImage_url || products.image_url}'
                 WHERE id = '${id}'
-            `)
-            
-        }else {
+            `) */
+            const updateProducts = {
+                id: newId || products.id,
+                name: newName || products.name,
+                price: newPrice || products.price,
+                description: newDescription || products.description,
+                image_url: newImage_url || products.image_url
+            }
+
+            await db.update(updateProducts).from('products').where({id: idToEdit})
+
+        } else {
             res.status(400)
             throw new Error("Id não encontrado")
         }
-        
-            res.status(200).send({ message: "Produto atualizado com sucesso" })
 
-    }catch (error: any) {
+        res.status(200).send({ message: "Produto atualizado com sucesso" })
+
+    } catch (error: any) {
         if (req.statusCode === 200) {
             res.status(500)
         }
@@ -320,14 +400,16 @@ app.put("/products/:id", async (req: Request, res: Response) => {
 //PURCHASES
 app.get("/purchases", async (req: Request, res: Response) => {
     try {
-        const name = req.query.name; 
+        /* const name = req.query.name;
         let query = `SELECT * FROM purchases`;
 
         if (name) {
-            query += ` WHERE name LIKE '%${name}%'` 
+            query += ` WHERE name LIKE '%${name}%'`
         }
 
-        const result = await db.raw(query);
+        const result = await db.raw(query); */
+
+        const result = await db('purchases')
 
         res.status(200).send(result);
     }
@@ -350,15 +432,22 @@ app.post("/purchases", async (req, res) => {
         }
 
         // Insira a compra na tabela "purchases".
-        const purchaseInsertQuery = `
+        /* const purchaseInsertQuery = `
             INSERT INTO purchases (id, buyer, total_price, created_at)
             VALUES (?, ?, ?, ?)
-        `;
+        `; */
 
-        await db.raw(purchaseInsertQuery, [id, buyer, total_price, created_at]);
+        await db('purchases').insert({
+            id,
+            buyer,
+            total_price,
+            created_at
+        })
 
+/*         await db.raw(purchaseInsertQuery, [id, buyer, total_price, created_at]);
+ */
         // Insira os produtos na tabela "purchases_products".
-        for (const product of products) {
+        /* for (const product of products) {
             const { product_id, quantity } = product;
             const purchaseProductInsertQuery = `
                 INSERT INTO purchases_products (purchase_id, product_id, quantity)
@@ -366,9 +455,18 @@ app.post("/purchases", async (req, res) => {
             `;
 
             await db.raw(purchaseProductInsertQuery, [id, product_id, quantity]);
-        }
+        } */
 
-        res.status(200).send('Compra cadastrada com sucesso.');
+        for (const product of products) {
+            const { id: product_id, quantity } = product;
+            await db('purchases_products').insert({
+              purchase_id: id,
+              product_id,
+              quantity,
+            });
+          }
+
+        res.status(201).send('Compra cadastrada com sucesso.');
 
     } catch (error) {
         res.status(500).send(error instanceof Error ? error.message : 'Erro inesperado');
@@ -384,7 +482,7 @@ app.delete("/purchases/:id", async (req: Request, res: Response) => {
         if (purchases && purchases.length > 0) {
             await db.raw(`DELETE FROM purchases WHERE id = '${id}'`);
             res.status(200).json({ message: "Produto excluído com sucesso" });
-        } else {       
+        } else {
             res.status(404).json({ message: "Produto não encontrado" });
         }
     } catch (error) {
